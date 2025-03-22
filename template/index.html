@@ -80,6 +80,15 @@
             }
         }
 
+        function isValidURL(str) {
+            try {
+                new URL(str);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
         async function processResponse(response) {
             const result = await response.json();
             document.getElementById("result").textContent = JSON.stringify(result, null, 2);
@@ -91,11 +100,14 @@
             alert(alertMessage);
             
             if (result.photo) {
-                document.getElementById("output-image").src = result.photo;
-                document.getElementById("output-image").style.display = "block";
+                if (isValidURL(result.photo)) {
+                    document.getElementById("output-image").src = result.photo;
+                    document.getElementById("output-image").style.display = "block";
+                } else {
+                    document.getElementById("result").textContent += `\nPhoto (非 URL 格式): ${result.photo}`;
+                }
             } else {
                 alert("No photo");
-                document.getElementById("output-image").style.display = "none";
             }
             
             sendResultToMQTT(result);
