@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音檔處理系統</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .upload-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            text-align: left;
+            background: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>音檔處理系統</h1>
+    <div class="container">
+        <div class="upload-section">
+            <h3>Transform</h3>
+            <input type="file" id="transform-input" class="upload-input" accept="audio/*">
+            <button class="upload-button" data-action="transform">上傳並轉換</button>
+        </div>
+        <div class="upload-section">
+            <h3>Compare</h3>
+            <input type="file" id="compare-input" class="upload-input" accept=".wav" multiple>
+            <button class="upload-button" data-action="compare">上傳並比較</button>
+        </div>
+        <div class="upload-section">
+            <h3>Encode</h3>
+            <input type="file" id="encode-input" class="upload-input" accept="audio/*">
+            <button class="upload-button" data-action="encode">上傳並加密</button>
+        </div>
+        <div class="upload-section">
+            <h3>Decode</h3>
+            <input type="file" id="decode-input" class="upload-input" accept="audio/*">
+            <button class="upload-button" data-action="decode">上傳並解密</button>
+        </div>
+        <h3>處理結果</h3>
+        <pre id="result"></pre>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadButtons = document.querySelectorAll('.upload-button');
+            const resultDisplay = document.getElementById('result');
+            
+            uploadButtons.forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const action = event.target.dataset.action;
+                    const input = document.getElementById(`${action}-input`);
+                    if (!input.files.length) {
+                        alert('請選擇音檔');
+                        return;
+                    }
+                    
+                    if (action === 'compare') {
+                        if (input.files.length !== 2) {
+                            alert('請選擇兩個 .wav 檔案進行比較');
+                            return;
+                        }
+                        for (const file of input.files) {
+                            if (!file.name.endsWith('.wav')) {
+                                alert('僅支援 .wav 格式的檔案');
+                                return;
+                            }
+                        }
+                    }
+                    
+                    const formData = new FormData();
+                    for (const file of input.files) {
+                        formData.append('file', file);
+                    }
+                    
+                    try {
+                        const response = await fetch(`https://your-backend-api.com/${action}`, {
+                            method: "POST",
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        resultDisplay.textContent = JSON.stringify(result, null, 2);
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('請求失敗，請稍後再試');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
