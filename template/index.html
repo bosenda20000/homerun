@@ -128,11 +128,18 @@
                                     body: formData
                                 });
                                 const result = await response.json();
-                                if (result.image_url) {
-                                    outputImage.src = result.image_url;
+                                
+                                let alertMessage = `Status: ${result.status}`;
+                                if (result.message) {
+                                    alertMessage += `\nMessage: ${result.message}`;
+                                }
+                                alert(alertMessage);
+                                
+                                if (result.photo) {
+                                    outputImage.src = result.photo;
                                     outputImage.style.display = 'block';
                                 } else {
-                                    resultDisplay.textContent = JSON.stringify(result, null, 2);
+                                    alert('No photo');
                                     outputImage.style.display = 'none';
                                 }
                             } catch (error) {
