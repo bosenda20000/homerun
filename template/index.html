@@ -63,29 +63,21 @@
         <img id="output-image" style="max-width:100%; display:none;" alt="處理結果">
     </div>
     <script>
-        const brokerUrl = "wss://your-mqtt-broker.com:port"; // 修改為你的 MQTT Broker
+        // 修改為你的 MQTT Broker
+        const brokerUrl = "wss://broker.mqttgo.io:8084/mqtt"; 
         const topic = "esp32/result"; // ESP32 監聽的主題
         const client = mqtt.connect(brokerUrl);
-        
+
         client.on("connect", () => {
             console.log("MQTT 已連接");
         });
-        
+
         function sendResultToMQTT(resultData) {
             if (client.connected) {
                 client.publish(topic, JSON.stringify(resultData));
                 console.log("已發送 MQTT 訊息:", resultData);
             } else {
                 console.error("MQTT 未連接");
-            }
-        }
-
-        function isValidURL(str) {
-            try {
-                new URL(str);
-                return true;
-            } catch (_) {
-                return false;
             }
         }
 
@@ -98,19 +90,30 @@
                 alertMessage += `\nMessage: ${result.message}`;
             }
             alert(alertMessage);
-            
+
+            // 確認 photo 是否為 URL，若否則顯示於 result
             if (result.photo) {
                 if (isValidURL(result.photo)) {
                     document.getElementById("output-image").src = result.photo;
                     document.getElementById("output-image").style.display = "block";
                 } else {
-                    document.getElementById("result").textContent += `\nPhoto (非 URL 格式): ${result.photo}`;
+                    document.getElementById("result").textContent += `\nPhoto: ${result.photo}`;
                 }
             } else {
                 alert("No photo");
+                document.getElementById("output-image").style.display = "none";
             }
-            
+
             sendResultToMQTT(result);
+        }
+
+        function isValidURL(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
         }
     </script>
 </body>
