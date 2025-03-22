@@ -1,0 +1,11 @@
+fastapi
+Jinja2
+uvicorn 
+pydantic 
+scipy
+numpy
+PyQt6
+librosa
+matplotlib
+scikit-learn
+dtw-python  
