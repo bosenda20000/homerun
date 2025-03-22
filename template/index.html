@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>音檔處理系統</title>
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,63 +57,100 @@
 <body>
     <h1>音檔處理系統</h1>
     <div class="container">
-        <h3>處理結果</h3>
-        <pre id="result"></pre>
-        <img id="output-image" style="max-width:100%; display:none;" alt="處理結果">
+        <div class="upload-section">
+            <h3>Transform</h3>
+            <input type="file" id="transform-input" accept=".wav">
+            <button data-action="transform">上傳並選擇</button>
+            <div class="options" id="transform-options">
+                <button data-type="waveform">波形圖</button>
+                <button data-type="spectrogram">頻譜圖</button>
+            </div>
+        </div>
+        <div class="upload-section">
+            <h3>Compare</h3>
+            <input type="file" id="compare-input" accept=".wav" multiple>
+            <button data-action="compare">上傳並選擇</button>
+            <div class="options" id="compare-options">
+                <button data-type="data">數據分析</button>
+                <button data-type="waveform">波形圖</button>
+                <button data-type="spectrogram">頻譜圖</button>
+            </div>
+        </div>
+        <div class="upload-section">
+          <h3>Encode</h3>
+          <input type="file" id="encode-input" class="upload-input" accept=".wav">
+          <button class="upload-button" data-action="encode">上傳並加密</button>
+      </div>
+      <div class="upload-section">
+          <h3>Decode</h3>
+          <input type="file" id="decode-input" class="upload-input" accept=".wav">
+          <button class="upload-button" data-action="decode">上傳並解密</button>
+      </div>
+      <h3>處理結果</h3>
+      <pre id="result"></pre>
+      <img id="output-image" style="max-width:100%; display:none;" alt="處理結果">
     </div>
     <script>
-        // 修改為你的 MQTT Broker
-        const brokerUrl = "wss://broker.mqttgo.io:8084/mqtt"; 
-        const topic = "esp32/result"; // ESP32 監聽的主題
-        const client = mqtt.connect(brokerUrl);
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadButtons = document.querySelectorAll('button[data-action]');
+            const resultDisplay = document.getElementById('result');
+            const outputImage = document.getElementById('output-image');
 
-        client.on("connect", () => {
-            console.log("MQTT 已連接");
+            uploadButtons.forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const action = event.target.dataset.action;
+                    const input = document.getElementById(`${action}-input`);
+                    const optionsDiv = document.getElementById(`${action}-options`);
+                    
+                    if (!input.files.length) {
+                        alert('請選擇音檔');
+                        return;
+                    }
+
+                    if (action === 'compare' && input.files.length !== 2) {
+                        alert('請選擇兩個 .wav 檔案進行比較');
+                        return;
+                    }
+
+                    optionsDiv.style.display = 'block';
+                    optionsDiv.querySelectorAll('button').forEach(optionButton => {
+                        optionButton.onclick = async () => {
+                            const type = optionButton.dataset.type;
+                            const formData = new FormData();
+                            for (const file of input.files) {
+                                formData.append('file', file);
+                            }
+                            formData.append('type', type);
+                            
+                            try {
+                                const response = await fetch(`https://your-backend-api.com/${action}`, {
+                                    method: "POST",
+                                    body: formData
+                                });
+                                const result = await response.json();
+                                
+                                let alertMessage = `Status: ${result.status}`;
+                                if (result.message) {
+                                    alertMessage += `\nMessage: ${result.message}`;
+                                }
+                                alert(alertMessage);
+                                
+                                if (result.photo) {
+                                    outputImage.src = result.photo;
+                                    outputImage.style.display = 'block';
+                                } else {
+                                    alert('No photo');
+                                    outputImage.style.display = 'none';
+                                }
+                            } catch (error) {
+                                console.error('Error:', error);
+                                alert('請求失敗，請稍後再試');
+                            }
+                        };
+                    });
+                });
+            });
         });
-
-        function sendResultToMQTT(resultData) {
-            if (client.connected) {
-                client.publish(topic, JSON.stringify(resultData));
-                console.log("已發送 MQTT 訊息:", resultData);
-            } else {
-                console.error("MQTT 未連接");
-            }
-        }
-
-        async function processResponse(response) {
-            const result = await response.json();
-            document.getElementById("result").textContent = JSON.stringify(result, null, 2);
-            
-            let alertMessage = `Status: ${result.status}`;
-            if (result.message) {
-                alertMessage += `\nMessage: ${result.message}`;
-            }
-            alert(alertMessage);
-
-            // 確認 photo 是否為 URL，若否則顯示於 result
-            if (result.photo) {
-                if (isValidURL(result.photo)) {
-                    document.getElementById("output-image").src = result.photo;
-                    document.getElementById("output-image").style.display = "block";
-                } else {
-                    document.getElementById("result").textContent += `\nPhoto: ${result.photo}`;
-                }
-            } else {
-                alert("No photo");
-                document.getElementById("output-image").style.display = "none";
-            }
-
-            sendResultToMQTT(result);
-        }
-
-        function isValidURL(string) {
-            try {
-                new URL(string);
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
     </script>
 </body>
 </html>
