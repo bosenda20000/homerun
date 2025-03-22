@@ -1,20 +1,21 @@
+import io
 import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
+from utils.save_file import save_photo
+SR = 44100 
 
-# Set sampling rate
-SR = 44100  # Sampling rate (music 22050 / speech 16000)
-
-# Load audio file
-def load_audio(file_path, sr=SR):
-    y, sr = librosa.load(file_path, sr=sr)
+# Load audio from binary data
+def load_audio(audio_bytes, sr=SR):
+    wav_io = io.BytesIO(audio_bytes)  # Convert binary data into a file-like object
+    y, sr = librosa.load(wav_io, sr=sr)  # Load audio using librosa
     return y, sr
 
-# Plot waveform
-def plot_waveform(audio_path1, audio_path2):
-    y1, sr1 = load_audio(audio_path1)
-    y2, sr2 = load_audio(audio_path2)
+# Plot waveform from binary audio data
+def plot_waveform(audio_bytes1, audio_bytes2):
+    y1, sr1 = load_audio(audio_bytes1)
+    y2, sr2 = load_audio(audio_bytes2)
 
     plt.figure(figsize=(12, 4))
 
@@ -33,12 +34,12 @@ def plot_waveform(audio_path1, audio_path2):
     plt.ylabel("Amplitude")
 
     plt.tight_layout()
-    plt.show()
+    return save_photo()
 
-# Plot spectrogram
-def plot_spectrogram(audio_path1, audio_path2):
-    y1, sr1 = load_audio(audio_path1)
-    y2, sr2 = load_audio(audio_path2)
+# Plot spectrogram from binary audio data
+def plot_spectrogram(audio_bytes1, audio_bytes2):
+    y1, sr1 = load_audio(audio_bytes1)
+    y2, sr2 = load_audio(audio_bytes2)
 
     plt.figure(figsize=(12, 6))
 
@@ -57,4 +58,4 @@ def plot_spectrogram(audio_path1, audio_path2):
     plt.title("Spectrogram - Audio 2")
 
     plt.tight_layout()
-    plt.show()
+    return save_photo()
