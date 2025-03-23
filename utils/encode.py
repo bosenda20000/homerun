@@ -32,7 +32,7 @@ def embed_watermark(audio, encryption_id):
     return audio
 
 # speed up audio
-def speed_up_audio(audio, rate, speed_factor=2.0):
+def speed_up_audio(audio, speed_factor=2.0):
     num_samples = int(len(audio) / speed_factor)
     resampled_audio = resample(audio, num_samples) # resampling the audio
     # clips the resampled audio values to fit within the range of 16-bit signed integers, which is the typical range for audio samples.
