@@ -3,7 +3,8 @@ import numpy as np
 from utils.save_file import save_photo
 
 # waveform
-def plot_waveform(audio, rate, title):
+def plot_waveform(rate, audio, title):
+    print(type(audio), type(rate))
     time = np.linspace(0, len(audio) / rate, num = len(audio))
     #picture
     plt.figure(figsize=(12, 6)) #set picture size 12*6
@@ -14,7 +15,7 @@ def plot_waveform(audio, rate, title):
     
     return save_photo()
 #frequency_spectrum
-def plot_frequency_spectrum(audio, rate, title):
+def plot_frequency_spectrum(rate, audio, title):
     audio = audio.flatten() # audio change to one-dimensional array
     N = len(audio) 
     yf = np.fft.fft(audio) # audio by Fast Fourier Transform, it's a y-axis frequency
