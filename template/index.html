@@ -77,18 +77,18 @@
             </div>
         </div>
         <div class="upload-section">
-          <h3>Encode</h3>
-          <input type="file" id="encode-input" class="upload-input" accept=".wav">
-          <button class="upload-button" data-action="encode">上傳並加密</button>
-      </div>
-      <div class="upload-section">
-          <h3>Decode</h3>
-          <input type="file" id="decode-input" class="upload-input" accept=".wav">
-          <button class="upload-button" data-action="decode">上傳並解密</button>
-      </div>
-      <h3>處理結果</h3>
-      <pre id="result"></pre>
-      <img id="output-image" style="max-width:100%; display:none;" alt="處理結果">
+            <h3>Encode</h3>
+            <input type="file" id="encode-input" class="upload-input" accept=".wav">
+            <button class="upload-button" data-action="encode">上傳並加密</button>
+        </div>
+        <div class="upload-section">
+            <h3>Decode</h3>
+            <input type="file" id="decode-input" class="upload-input" accept=".wav">
+            <button class="upload-button" data-action="decode">上傳並解密</button>
+        </div>
+        <h3>處理結果</h3>
+        <pre id="result"></pre>
+        <img id="output-image" style="max-width:100%; display:none;" alt="處理結果">
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -102,7 +102,7 @@
                     const input = document.getElementById(`${action}-input`);
                     const optionsDiv = document.getElementById(`${action}-options`);
                     
-                    if (!input.files.length) {
+                    if (!input || !input.files.length) {
                         alert('請選擇音檔');
                         return;
                     }
@@ -112,42 +112,51 @@
                         return;
                     }
 
-                    optionsDiv.style.display = 'block';
-                    optionsDiv.querySelectorAll('button').forEach(optionButton => {
-                        optionButton.onclick = async () => {
-                            const type = optionButton.dataset.type;
-                            const formData = new FormData();
-                            for (const file of input.files) {
-                                formData.append('file', file);
-                            }
-                            formData.append('type', type);
-                            
-                            try {
-                                const response = await fetch(`https://your-backend-api.com/${action}`, {
-                                    method: "POST",
-                                    body: formData
-                                });
-                                const result = await response.json();
+                    if (optionsDiv) {
+                        optionsDiv.style.display = 'block';
+                        optionsDiv.querySelectorAll('button').forEach(optionButton => {
+                            optionButton.onclick = async () => {
+                                const type = optionButton.dataset.type;
+                                const formData = new FormData();
                                 
-                                let alertMessage = `Status: ${result.status}`;
-                                if (result.message) {
-                                    alertMessage += `\nMessage: ${result.message}`;
-                                }
-                                alert(alertMessage);
-                                
-                                if (result.photo) {
-                                    outputImage.src = result.photo;
-                                    outputImage.style.display = 'block';
+                                if (action === 'compare') {
+                                    formData.append('file1', input.files[0]);
+                                    formData.append('file2', input.files[1]);
                                 } else {
-                                    alert('No photo');
-                                    outputImage.style.display = 'none';
+                                    for (const file of input.files) {
+                                        formData.append('file', file);
+                                    }
                                 }
-                            } catch (error) {
-                                console.error('Error:', error);
-                                alert('請求失敗，請稍後再試');
-                            }
-                        };
-                    });
+                                
+                                formData.append('type', type);
+                                
+                                try {
+                                    const response = await fetch(`https://your-backend-api.com/${action}`, {
+                                        method: "POST",
+                                        body: formData
+                                    });
+                                    const result = await response.json();
+                                    
+                                    let alertMessage = `Status: ${result.status}`;
+                                    if (result.message) {
+                                        alertMessage += `\nMessage: ${result.message}`;
+                                    }
+                                    alert(alertMessage);
+                                    
+                                    if (result.photo) {
+                                        outputImage.src = result.photo;
+                                        outputImage.style.display = 'block';
+                                    } else {
+                                        alert('No photo');
+                                        outputImage.style.display = 'none';
+                                    }
+                                } catch (error) {
+                                    console.error('Error:', error);
+                                    alert('請求失敗，請稍後再試');
+                                }
+                            };
+                        });
+                    }
                 });
             });
         });
